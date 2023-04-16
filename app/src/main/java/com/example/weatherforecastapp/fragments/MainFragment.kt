@@ -30,12 +30,13 @@ class MainFragment : Fragment() {
 
     private fun permissionListener() {
         pLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            Toast.makeText(activity, "Permission is $it", Toast.LENGTH_LONG)
+            Toast.makeText(activity, "Permission is $it", Toast.LENGTH_LONG).show()
         }
     }
 
     private fun checkPermission() {
         if(!isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            permissionListener()
             pLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
