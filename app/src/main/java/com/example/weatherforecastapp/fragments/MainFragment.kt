@@ -9,12 +9,21 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.viewpager.widget.PagerAdapter
 import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.adapters.VpAdapter
 import com.example.weatherforecastapp.databinding.FragmentMainBinding
+import com.google.android.material.tabs.TabLayoutMediator
 
 class MainFragment : Fragment() {
     private lateinit var pLauncher : ActivityResultLauncher<String>
     private lateinit var binding: FragmentMainBinding
+    private val fList = listOf {
+        Hours.newInstance();
+        Days.newInstance()
+    }
+    private val tList = listOf{"hours"; "days"}
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,6 +37,13 @@ class MainFragment : Fragment() {
         checkPermission()
     }
 
+    private fun init() = with(binding) {
+        val adapter = VpAdapter(activity as AppCompatActivity, fList as List<Fragment>)
+        vp.adapter = adapter
+        TabLayoutMediator(tlMenu, vp) {
+            tab, pos -> tab.text = tList[pos].toString()
+        }.attach()
+    }
     private fun permissionListener() {
         pLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             Toast.makeText(activity, "Permission is $it", Toast.LENGTH_LONG).show()
