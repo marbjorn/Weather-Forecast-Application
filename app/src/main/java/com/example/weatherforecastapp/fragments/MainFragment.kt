@@ -19,11 +19,11 @@ import com.google.android.material.tabs.TabLayoutMediator
 class MainFragment : Fragment() {
     private lateinit var pLauncher : ActivityResultLauncher<String>
     private lateinit var binding: FragmentMainBinding
-    private val fList = listOf {
-        Hours.newInstance();
-        Days.newInstance()
-    }
-    private val tList = listOf{"hours"; "days"}
+    private val fList = listOf (
+        Hours.newInstance(),
+        Days.newInstance(),
+    )
+    private val tList = listOf("hours", "days")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
