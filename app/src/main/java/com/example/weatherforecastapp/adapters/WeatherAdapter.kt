@@ -11,7 +11,7 @@ import com.example.weatherforecastapp.databinding.ListItemBinding
 
 class WeatherAdapter : ListAdapter<WeatherModel, WeatherAdapter.Holder>(Comparator()){
     class Holder(view : View) : RecyclerView.ViewHolder(view){
-        private val binding = ListItemBinding.bind(view)
+        val binding = ListItemBinding.bind(view)
         fun bind(item : WeatherModel) = with(binding){
             tvDate.text = item.time
             tvCurrentCondition.text = item.condition

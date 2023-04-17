@@ -12,8 +12,8 @@ import com.example.weatherforecastapp.adapters.WeatherModel
 import com.example.weatherforecastapp.databinding.FragmentHoursBinding
 
 class Hours : Fragment() {
-    private lateinit var binding : FragmentHoursBinding
-    private lateinit var adapter : WeatherAdapter
+    private lateinit var binding: FragmentHoursBinding
+    private lateinit var adapter: WeatherAdapter
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -24,28 +24,29 @@ class Hours : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initRecyclerView()
+        initRcView()
     }
 
-    private fun initRecyclerView() = with(binding) {
+    private fun initRcView() = with(binding){
         rcView.layoutManager = LinearLayoutManager(activity)
         adapter = WeatherAdapter()
-        rcView.adapter= adapter
-        val list = listOf(WeatherModel(
-            time = "18:00",
-            condition = "Sunny",
-            currentTemp = "25C"),
+        val list = listOf(
+            WeatherModel(time = "12:00",
+                condition = "Sunny",
+                currentTemp = "25ºC"),
             WeatherModel(
-                time = "19:00",
-                condition = "Cloudy",
-                currentTemp = "22C"),
+                time = "12:00",
+                condition = "Sunny",
+                currentTemp = "25ºC"),
             WeatherModel(
-                time = "20:00",
-                condition = "Rainy",
-                currentTemp = "19C")
+                time = "12:00",
+                condition = "Sunny",
+                currentTemp = "25ºC")
         )
+        rcView.adapter = adapter
         adapter.submitList(list)
     }
+
     companion object {
         @JvmStatic
         fun newInstance() = Hours()
