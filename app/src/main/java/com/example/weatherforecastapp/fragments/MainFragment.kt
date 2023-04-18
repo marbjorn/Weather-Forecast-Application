@@ -11,16 +11,18 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.viewpager.widget.PagerAdapter
+import androidx.fragment.app.activityViewModels
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.weatherforecastapp.BuildConfig
-import com.example.weatherforecastapp.R
+import com.example.weatherforecastapp.MainViewModel
+import com.example.weatherforecastapp.Parser
 import com.example.weatherforecastapp.adapters.VpAdapter
 import com.example.weatherforecastapp.adapters.WeatherModel
 import com.example.weatherforecastapp.databinding.FragmentMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
+import com.squareup.picasso.Picasso
 import org.json.JSONObject
 
 class MainFragment : Fragment() {
@@ -31,6 +33,8 @@ class MainFragment : Fragment() {
         Days.newInstance(),
     )
     private val tList = listOf("hours", "days")
+
+    private val model : MainViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -43,12 +47,29 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         checkPermission()
         init()
+        updateCurrentCard()
+        requestWeatherData("London")
     }
 
+
+    fun requestWeatherData(city : String) {
+        val url = "https://api.weatherapi.com/v1/forecast.json?key=${MainFragment.API}&q=$city&days=3&aqi=no&alerts=no"
+        val queue = Volley.newRequestQueue(context)
+        val request = StringRequest(
+            Request.Method.GET,
+            url,
+            {
+                    result -> parseWeatherData(result)
+            },
+            {
+                    error -> Log.d("LogAPI", "Error: $error")
+            }
+        )
+        queue.add(request)
+    }
     private fun init() = with(binding) {
         val adapter = VpAdapter(activity as AppCompatActivity, fList as List<Fragment>)
         vp.adapter = adapter
-        requestWeatherData("London")
         TabLayoutMediator(tlMenu, vp) {
             tab, pos -> tab.text = tList[pos].toString()
         }.attach()
@@ -66,33 +87,17 @@ class MainFragment : Fragment() {
         }
     }
 
-    fun requestWeatherData(city : String) {
-        val url = "https://api.weatherapi.com/v1/forecast.json?key=${Companion.API}&q=$city&days=3&aqi=no&alerts=no"
-        val queue = Volley.newRequestQueue(context)
-        val request = StringRequest(
-            Request.Method.GET,
-            url,
-            {
-                result -> Log.d("LogAPI", "Success: $result")
-            },
-            {
-                error -> Log.d("LogAPI", "Error: $error")
-            }
-        )
-        queue.add(request)
-    }
-
     private fun parseWeatherData(result : String) {
         val mainObject = JSONObject(result)
-        var list = parseDays(mainObject)
+        val list = parseDays(mainObject)
         parseCurrentData(mainObject, list[0])
 
     }
 
     fun parseCurrentData(mainObject : JSONObject, weatherModel : WeatherModel) {
-        val currentObj = mainObject.getJSONObject("location")
+        val currentObj = mainObject.getJSONObject("current")
         val item = WeatherModel(
-            mainObject.getString("location"),
+            mainObject.getJSONObject("location").getString("name"),
             currentObj.getString("last_updated"),
             currentObj.getJSONObject("condition").getString("text"),
             currentObj.getString("temp_c"),
@@ -101,6 +106,8 @@ class MainFragment : Fragment() {
             currentObj.getJSONObject("condition").getString("icon"),
             weatherModel.hours
         )
+        Log.d("LogAPI", "data is parsed")
+        model.lifeDataCurrent.value = item
     }
 
     fun parseDays(mainObject: JSONObject) : List<WeatherModel> {
@@ -115,14 +122,25 @@ class MainFragment : Fragment() {
                 day.getString("date"),
                 dayObj.getJSONObject("condition").getString("text"),
                 dayObj.getString("avgtemp_c"),
-                dayObj.getString("mintemp_c"),
                 dayObj.getString("maxtemp_c"),
+                dayObj.getString("mintemp_c"),
                 dayObj.getJSONObject("condition").getString("icon"),
                 day.getJSONArray("hour").toString()
             )
             list.add(item)
         }
         return list
+    }
+    private fun updateCurrentCard() = with(binding){
+        model.lifeDataCurrent.observe(viewLifecycleOwner){
+            tvCity.text = it.city
+            tvData.text = it.time
+            tvCurrentTemp.text = "${it.currentTemp}°C"
+            tvMaxMinTemp.text = "${it.maxTemp}°C/${it.minTemp}°C"
+            tvWeatherCondition.text = it.condition
+            Picasso.get().load("https:" + it.imageUrl).into(imWeather)
+            Log.d("LogAPI", "updated")
+        }
     }
     companion object {
         @JvmStatic
