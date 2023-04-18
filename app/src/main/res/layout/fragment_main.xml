@@ -37,7 +37,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:textColor="@color/white"
-                android:text="12.08 Sunday"
+                android:text="Date"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
             <ImageView
@@ -73,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
-                android:text="Sunny"
+                android:text="Weather condition"
                 app:layout_constraintTop_toBottomOf="@id/tv_current_temp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -84,7 +84,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:id="@+id/tv_max_min_temp"
-                android:text="25/12"
+                android:text="max/min"
                 android:textColor="@color/white"
                 app:layout_constraintTop_toBottomOf="@id/tv_weather_condition"/>
             <ImageButton

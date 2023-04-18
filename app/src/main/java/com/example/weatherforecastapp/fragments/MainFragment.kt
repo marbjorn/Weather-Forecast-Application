@@ -1,9 +1,11 @@
 package com.example.weatherforecastapp.fragments
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Bundle
-import android.os.LocaleList
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -19,14 +21,14 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.weatherforecastapp.BuildConfig
+import com.example.weatherforecastapp.DialogManager
 import com.example.weatherforecastapp.MainViewModel
-import com.example.weatherforecastapp.Parser
 import com.example.weatherforecastapp.adapters.VpAdapter
 import com.example.weatherforecastapp.adapters.WeatherModel
 import com.example.weatherforecastapp.databinding.FragmentMainBinding
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.material.tabs.TabLayoutMediator
 import com.squareup.picasso.Picasso
@@ -57,7 +59,6 @@ class MainFragment : Fragment() {
         checkPermission()
         init()
         updateCurrentCard()
-        getLocation()
     }
 
 
@@ -72,9 +73,15 @@ class MainFragment : Fragment() {
             },
             {
                     error -> Log.d("LogAPI", "Error: $error")
+                    Toast.makeText(activity, "The city name is not correct", Toast.LENGTH_SHORT).show()
             }
         )
         queue.add(request)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkLocation()
     }
     private fun init() = with(binding) {
         fLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
@@ -85,8 +92,34 @@ class MainFragment : Fragment() {
         }.attach()
         ibRefresh.setOnClickListener{
             tlMenu.selectTab(tlMenu.getTabAt(0))
+            checkLocation()
+        }
+        ibSearch.setOnClickListener{
+            DialogManager.searchByNameDialog(requireContext(), object : DialogManager.Listener {
+                override fun onClick(name: String?) {
+                    if (name != null) {
+                        requestWeatherData(name)
+                    }
+                }
+            })
+        }
+    }
+
+    private fun checkLocation() {
+        if (isLocationEnabled()) {
             getLocation()
         }
+        else {
+            DialogManager.locationSettingsDialog(requireContext(), object : DialogManager.Listener {
+                override fun onClick(name : String?) {
+                    startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+            })
+        }
+    }
+    private fun isLocationEnabled() : Boolean {
+        val lm = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
     private fun getLocation() {
@@ -102,7 +135,7 @@ class MainFragment : Fragment() {
             return
         }
         fLocationClient
-            .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, cl.token)
+            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cl.token)
             .addOnCompleteListener{
                 requestWeatherData("${it.result.latitude},${it.result.longitude}")
             }
